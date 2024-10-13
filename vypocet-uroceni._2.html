@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Výpočet penzijního spoření</title>
+    <style>
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            margin: 20px; 
+            font-size: 16px;
+            background: linear-gradient(180deg, #f5f5f5, #ffffff); /* Světle šedý gradient */
+            color: #333; /* Barva textu */
+        }
+        .container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
+        .column { width: 35%; }
+        label { 
+            display: block; 
+            margin-top: 10px; 
+            font-weight: bold; 
+            font-size: 14px; 
+            color: #4f4f4f; /* Tmavší barva textu */
+        }
+        input {
+            padding: 10px;
+            width: 150px; /* Zkrácení šířky vstupních polí */
+            border: 1px solid #d1d1d1; /* Tenký šedý rámeček */
+            border-radius: 5px; /* Jemně zakulacené rohy */
+            font-size: 14px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        button { 
+            margin: 20px auto; 
+            padding: 12px 40px; 
+            background-color: #007BFF; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; /* Zakulacené tlačítko */
+            cursor: pointer; 
+            font-size: 16px; 
+            transition: background-color 0.3s ease; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Jemný stín */
+        }
+        button:hover {
+            background-color: #0056b3; /* Barva tlačítka při hoveru */
+        }
+        .result { 
+            margin-top: 20px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            color: #007BFF; /* Modrá barva výsledků */
+        }
+        h2 { 
+            font-size: 1.4em; 
+            color: #333; /* Tmavší barva pro nadpisy */
+            border-bottom: 2px solid #e0e0e0; /* Tenká spodní linka pod nadpisy */
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .highlight { background-color: #f0f8ff; border: 1px solid #007BFF; }
+        .center { text-align: center; }
+        .difference { 
+            margin-top: 30px; 
+            font-size: 1.4em; 
+            color: #d32f2f; 
+            font-weight: bold; 
+            text-align: center; 
+        }
+        .result-number { font-size: 20px; font-weight: bold; color: #007BFF; }
+        .blue-text { color: #007BFF; font-weight: bold; }
+        .button-container { display: flex; justify-content: center; margin-top: 30px; }
+        .column input:focus {
+            border-color: #007BFF; /* Zvýraznění inputu při focusu */
+            outline: none;
+        }
+        .image-container {
+            width: 200px; /* Nastavení šířky obrázku */
+            height: auto;
+            text-align: center;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px; /* Jemné zakulacení fotky */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Jemný stín */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Levý sloupec: DPS - Penzijní spoření -->
+    <div class="column">
+        <h2>DPS - Penzijní spoření</h2>
+
+        <label for="initialInvestment">Počáteční stav fondu (Kč):</label>
+        <input type="text" id="initialInvestment" placeholder="Např. 250 000" class="highlight" oninput="updateStarFund(); formatNumberInput(this)" maxlength="13">
+
+        <label for="interestRate">Roční úroková sazba (%):</label>
+        <input type="number" id="interestRate" placeholder="Např. 10" class="highlight" oninput="calculateStateContribution(); updateStarFund()">
+
+        <label for="years">Doba investice (roky):</label>
+        <input type="number" id="years" placeholder="Např. 10" class="highlight" oninput="calculateStateContribution(); updateStarFund()">
+
+        <h2>Pravidelná investice</h2>
+
+        <label for="monthlyContribution">Vlastní vklad (měsíčně v Kč):</label>
+        <input type="text" id="monthlyContribution" placeholder="Např. 1 700" class="highlight" oninput="calculateStateContribution(); formatNumberInput(this)" maxlength="13">
+
+        <label for="employerContribution">Příspěvek zaměstnavatele (měsíčně v Kč):</label>
+        <input type="text" id="employerContribution" placeholder="Např. 0" class="highlight" oninput="updateStarFund(); formatNumberInput(this)" maxlength="13">
+
+        <label for="stateContribution">Státní příspěvek (měsíčně v Kč):</label>
+        <input type="text" id="stateContribution" readonly>
+
+        <!-- Závěrečný výsledek DPS -->
+        <div class="result" id="totalResult"></div>
+    </div>
+
+    <!-- Střední sloupec: Fotka -->
+    <div class="image-container">
+        <img src="/mnt/data/portretni-kucera-2024-08-01-25.jpg" alt="Profilová fotografie">
+    </div>
+
+    <!-- Pravý sloupec: Starý penzijní fond -->
+    <div class="column">
+        <h2>Starý penzijní fond</h2>
+
+        <label for="initialInvestment2">Počáteční stav fondu (Kč):</label>
+        <input type="text" id="initialInvestment2" placeholder="Např. 250 000" readonly>
+
+        <label for="interestRate2">Roční úroková sazba (%):</label>
+        <input type="number" id="interestRate2" value="1" readonly>
+
+        <label for="years2">Doba investice (roky):</label>
+        <input type="number" id="years2" readonly>
+
+        <h2>Pravidelná investice</h2>
+
+        <label for="monthlyContribution2">Vlastní vklad (měsíčně v Kč):</label>
+        <input type="number" id="monthlyContribution2" readonly>
+
+        <label for="employerContribution2">Příspěvek zaměstnavatele (měsíčně v Kč):</label>
+        <input type="number" id="employerContribution2" readonly>
+
+        <label for="stateContribution2">Státní příspěvek (měsíčně v Kč):</label>
+        <input type="text" id="stateContribution2" readonly>
+
+        <!-- Závěrečný výsledek Starý penzijní fond -->
+        <div class="result" id="totalResult2"></div>
+    </div>
+</div>
+
+<!-- Tlačítko "Spočítat vše" mezi Celkový výsledek DPS a Starý penzijní fond -->
+<div class="button-container">
+    <button onclick="calculateAll()">Spočítej</button>
+</div>
+
+<!-- Zobrazení rozdílu mezi DPS a Starým penzijním fondem s uvedením doby investice a úrokové sazby -->
+<h2 class="difference">Rozdíl mezi DPS a Starým penzijním fondem</h2>
+<div class="result" id="differenceResult"></div>
+
+<script>
+    // Funkce pro formátování čísla s mezerami mezi tisíci
+    function formatNumberInput(input) {
+        let value = input.value.replace(/\s+/g, '').replace(/\D/g, ''); // Odstraní mezery a nečíselné znaky
+        if (value.length > 10) {
+            value = value.slice(0, 10); // Omezí na 10 číslic
+        }
+        input.value = Number(value).toLocaleString('cs-CZ'); // Přidá mezery mezi tisíci
+    }
+
+    // Aktualizace hodnot v "Starý penzijní fond" na základě vstupů z "DPS"
+    function updateStarFund() {
+        document.getElementById('initialInvestment2').value = document.getElementById('initialInvestment').value;  // Počáteční stav fondu
+        document.getElementById('years2').value = document.getElementById('years').value;  // Doba investice
+        document.getElementById('monthlyContribution2').value = document.getElementById('monthlyContribution').value || 100;  // Vlastní vklad
+        document.getElementById('employerContribution2').value = document.getElementById('employerContribution').value || 0;  // Příspěvek zaměstnavatele
+        document.getElementById('stateContribution2').value = document.getElementById('stateContribution').value;  // Státní příspěvek
+        calculateStateContribution2();  // Aktualizace státního příspěvku ve Starém penzijním fondu
+    }
+
+    // Výpočet státního příspěvku a celkové částky za rok pro DPS
+    function calculateStateContribution() {
+        let monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value.replace(/\s+/g, '')) || 100;
+
+        // Výpočet státního příspěvku (počítá se až od 500 Kč do 1700 Kč)
+        let eligibleContribution = Math.max(Math.min(monthlyContribution, 1700), 500);
+        let stateContribution = Math.floor(eligibleContribution * 0.20);
+
+        if (monthlyContribution < 500) {
+            stateContribution = 0; // Pokud je vklad nižší než 500 Kč, státní příspěvek je 0 Kč
+        }
+
+        document.getElementById('stateContribution').value = stateContribution.toLocaleString('cs-CZ') + ' Kč';
+        updateStarFund();
+    }
+
+    // Výpočet složeného úroku a celkové částky pro DPS
+    function calculateCompoundInterestWithMonthlyContributions() {
+        let initialInvestment = parseFloat(document.getElementById('initialInvestment').value.replace(/\s+/g, '')) || 0; // Počáteční vklad
+        let monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0; // Měsíční vklad
+        let employerContribution = parseFloat(document.getElementById('employerContribution').value.replace(/\s+/g, '')) || 0; // Příspěvek zaměstnavatele
+        let stateContribution = parseFloat(document.getElementById('stateContribution').value.replace(/\s+/g, '')) || 0; // Státní příspěvek
+        let totalMonthlyContribution = monthlyContribution + employerContribution + stateContribution; // Celkový měsíční příspěvek
+
+        let interestRate = parseFloat(document.getElementById('interestRate').value) / 100; // Roční úroková sazba (desetinné číslo)
+        let years = parseFloat(document.getElementById('years').value) || 0; // Doba investice
+        let n = 12; // Počet úročení za rok (měsíční)
+
+        // Výpočet složeného úroku pro počáteční vklad
+        let initialInvestmentGrowth = initialInvestment * Math.pow((1 + interestRate / n), n * years);
+
+        // Výpočet složeného úroku pro měsíční vklady
+        let monthlyContributionsGrowth = totalMonthlyContribution * ((Math.pow(1 + (interestRate / n), n * years) - 1) / (interestRate / n));
+
+        // Celková částka
+        let totalAmount = initialInvestmentGrowth + monthlyContributionsGrowth;
+
+        // Výstup do HTML (DPS)
+        document.getElementById('totalResult').innerHTML = 'Celkový výsledek DPS: <span class="result-number">' + totalAmount.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK' }) + '</span>';
+
+        return totalAmount;
+    }
+
+    // Výpočet složeného úroku pro Starý penzijní fond
+    function calculateCompoundInterest2() {
+        let initialInvestment2 = parseFloat(document.getElementById('initialInvestment2').value.replace(/\s+/g, '')) || 0; // Počáteční vklad
+        let monthlyContribution2 = parseFloat(document.getElementById('monthlyContribution2').value) || 0; // Měsíční vklad
+        let employerContribution2 = parseFloat(document.getElementById('employerContribution2').value.replace(/\s+/g, '')) || 0; // Příspěvek zaměstnavatele
+        let stateContribution2 = parseFloat(document.getElementById('stateContribution2').value.replace(/\s+/g, '')) || 0; // Státní příspěvek
+        let totalMonthlyContribution2 = monthlyContribution2 + employerContribution2 + stateContribution2; // Celkový měsíční příspěvek
+
+        let interestRate2 = parseFloat(document.getElementById('interestRate2').value) / 100; // Roční úroková sazba (desetinné číslo)
+        let years2 = parseFloat(document.getElementById('years2').value) || 0;
+        let n = 12; // Počet úročení za rok (měsíční)
+
+        // Výpočet složeného úroku pro počáteční vklad
+        let initialInvestmentGrowth2 = initialInvestment2 * Math.pow((1 + interestRate2 / n), n * years2);
+
+        // Výpočet složeného úroku pro měsíční vklady
+        let monthlyContributionsGrowth2 = totalMonthlyContribution2 * ((Math.pow(1 + (interestRate2 / n), n * years2) - 1) / (interestRate2 / n));
+
+        // Celková částka
+        let totalAmount2 = initialInvestmentGrowth2 + monthlyContributionsGrowth2;
+
+        // Výstup do HTML (Starý penzijní fond)
+        document.getElementById('totalResult2').innerHTML = 'Celkový výsledek Starý penzijní fond: <span class="result-number">' + totalAmount2.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK' }) + '</span>';
+
+        return totalAmount2;
+    }
+
+    // Výpočet obou částí a rozdílu mezi nimi
+    function calculateAll() {
+        if (!document.getElementById('monthlyContribution').value) {
+            document.getElementById('monthlyContribution').value = 100;
+            document.getElementById('monthlyContribution2').value = 100;  // Automaticky i pro Starý penzijní fond
+        }
+
+        let totalDPS = calculateCompoundInterestWithMonthlyContributions(); // Výpočet pro DPS
+        let totalStarFund = calculateCompoundInterest2(); // Výpočet pro Starý penzijní fond
+
+        // Výpočet rozdílu mezi DPS a Starým penzijním fondem
+        let difference = totalDPS - totalStarFund;
+        let interestRate = document.getElementById('interestRate').value || 0;
+        let years = document.getElementById('years').value || 0;
+        document.getElementById('differenceResult').innerHTML = 'Rozdíl mezi DPS a Starým penzijním fondem za ' + years + ' let při roční úrokové sazbě p.a. ' + interestRate + '%: <span class="result-number">' + difference.toLocaleString('cs-CZ', { style: 'currency', currency: 'CZK' }) + '</span>';
+    }
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
